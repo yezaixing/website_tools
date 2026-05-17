@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="title">图片工具箱 - 在线免费图片处理</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230071e3' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><path d='M21 15l-5-5L5 21'/></svg>">
 </head>
 <body>
   <header>
@@ -20,13 +21,17 @@
     </div>
   </header>
 
-  <nav>
+  <nav class="tool-nav">
     <button class="tab-btn active" data-tab="convert" data-i18n="tabConvert">格式转换</button>
     <button class="tab-btn" data-tab="compress" data-i18n="tabCompress">图片压缩</button>
     <button class="tab-btn" data-tab="resize" data-i18n="tabResize">裁剪/缩放</button>
     <button class="tab-btn" data-tab="rotate" data-i18n="tabRotate">旋转/翻转</button>
     <button class="tab-btn" data-tab="grayscale" data-i18n="tabGrayscale">灰度处理</button>
     <button class="tab-btn" data-tab="adjust" data-i18n="tabAdjust">亮度/对比度</button>
+    <button class="tab-btn" data-tab="watermark" data-i18n="tabWatermark">添加水印</button>
+    <button class="tab-btn" data-tab="blur" data-i18n="tabBlur">模糊效果</button>
+    <button class="tab-btn" data-tab="round" data-i18n="tabRound">圆角处理</button>
+    <button class="tab-btn" data-tab="collage" data-i18n="tabCollage">图片拼接</button>
   </nav>
 
   <main>
@@ -195,7 +200,7 @@
               <button class="rotate-preset-btn" data-deg="90">90°</button>
               <button class="rotate-preset-btn" data-deg="180">180°</button>
               <button class="rotate-preset-btn" data-deg="270">270°</button>
-              <button class="rotate-preset-btn" data-deg="0">0°</button>
+              <button class="rotate-preset-btn active" data-deg="0">0°</button>
             </div>
           </div>
           <div class="control-group">
@@ -298,12 +303,215 @@
         </div>
       </div>
     </section>
+
+    <!-- 添加水印 -->
+    <section id="watermark" class="tab-panel">
+      <div class="tool-container">
+        <div class="upload-area" id="watermark-upload">
+          <input type="file" id="watermark-input" accept="image/*" hidden>
+          <div class="upload-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="M21 15l-5-5L5 21"/>
+            </svg>
+            <p data-i18n="dropHint">点击或拖拽图片到这里</p>
+            <span data-i18n="supportedFormats">支持 JPG, PNG, WebP, GIF</span>
+          </div>
+          <div class="preview-area hidden">
+            <img id="watermark-preview" alt="Preview">
+            <button class="clear-btn" id="watermark-clear">×</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="control-group">
+            <label data-i18n="watermarkText">水印文字</label>
+            <input type="text" id="watermark-text" class="text-input" placeholder="输入水印文字" data-i18n-placeholder="watermarkPlaceholder">
+          </div>
+          <div class="control-group">
+            <label><span data-i18n="fontSize">字体大小</span>: <span id="watermark-size-val">24</span>px</label>
+            <input type="range" id="watermark-size" min="12" max="72" value="24">
+          </div>
+          <div class="control-group">
+            <label><span data-i18n="opacity">透明度</span>: <span id="watermark-opacity-val">50</span>%</label>
+            <input type="range" id="watermark-opacity" min="10" max="100" value="50">
+          </div>
+          <div class="control-group">
+            <label data-i18n="watermarkPosition">水印位置</label>
+            <div class="preset-buttons">
+              <button class="wm-pos-btn active" data-pos="center">居中</button>
+              <button class="wm-pos-btn" data-pos="bottom-right">右下角</button>
+              <button class="wm-pos-btn" data-pos="bottom-left">左下角</button>
+              <button class="wm-pos-btn" data-pos="top-right">右上角</button>
+            </div>
+          </div>
+          <button class="action-btn" id="watermark-btn" data-i18n="watermarkBtn">添加水印</button>
+        </div>
+
+        <div class="result-area hidden" id="watermark-result">
+          <div class="result-info">
+            <span id="watermark-size-info"></span>
+          </div>
+          <a id="watermark-download" class="download-btn" download data-i18n="downloadBtn">下载图片</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 模糊效果 -->
+    <section id="blur" class="tab-panel">
+      <div class="tool-container">
+        <div class="upload-area" id="blur-upload">
+          <input type="file" id="blur-input" accept="image/*" hidden>
+          <div class="upload-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="M21 15l-5-5L5 21"/>
+            </svg>
+            <p data-i18n="dropHint">点击或拖拽图片到这里</p>
+            <span data-i18n="supportedFormats">支持 JPG, PNG, WebP, GIF</span>
+          </div>
+          <div class="preview-area hidden">
+            <img id="blur-preview" alt="Preview">
+            <button class="clear-btn" id="blur-clear">×</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="control-group">
+            <label><span data-i18n="blurLevel">模糊强度</span>: <span id="blur-value">5</span>px</label>
+            <input type="range" id="blur-slider" min="0" max="20" value="5">
+          </div>
+          <button class="action-btn" id="blur-btn" data-i18n="blurBtn">应用模糊</button>
+        </div>
+
+        <div class="result-area hidden" id="blur-result">
+          <div class="result-info">
+            <span id="blur-size"></span>
+          </div>
+          <a id="blur-download" class="download-btn" download data-i18n="downloadBtn">下载图片</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 圆角处理 -->
+    <section id="round" class="tab-panel">
+      <div class="tool-container">
+        <div class="upload-area" id="round-upload">
+          <input type="file" id="round-input" accept="image/*" hidden>
+          <div class="upload-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="M21 15l-5-5L5 21"/>
+            </svg>
+            <p data-i18n="dropHint">点击或拖拽图片到这里</p>
+            <span data-i18n="supportedFormats">支持 JPG, PNG, WebP, GIF</span>
+          </div>
+          <div class="preview-area hidden">
+            <img id="round-preview" alt="Preview">
+            <button class="clear-btn" id="round-clear">×</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="control-group">
+            <label><span data-i18n="cornerRadius">圆角半径</span>: <span id="round-value">20</span>px</label>
+            <input type="range" id="round-slider" min="0" max="100" value="20">
+          </div>
+          <button class="action-btn" id="round-btn" data-i18n="roundBtn">应用圆角</button>
+        </div>
+
+        <div class="result-area hidden" id="round-result">
+          <div class="result-info">
+            <span id="round-size"></span>
+          </div>
+          <a id="round-download" class="download-btn" download data-i18n="downloadBtn">下载图片</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 图片拼接 -->
+    <section id="collage" class="tab-panel">
+      <div class="tool-container">
+        <div class="upload-area" id="collage-upload">
+          <input type="file" id="collage-input" accept="image/*" multiple hidden>
+          <div class="upload-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="M21 15l-5-5L5 21"/>
+            </svg>
+            <p data-i18n="collageHint">点击或拖拽多张图片到这里</p>
+            <span data-i18n="collageCount">已选择: <span id="collage-count">0</span> 张图片</span>
+          </div>
+          <div class="preview-area hidden" id="collage-preview-area">
+            <div id="collage-thumbnails"></div>
+            <button class="clear-btn" id="collage-clear">×</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="control-group">
+            <label data-i18n="collageLayout">拼接布局</label>
+            <div class="preset-buttons">
+              <button class="collage-layout-btn active" data-layout="2col">2列</button>
+              <button class="collage-layout-btn" data-layout="3col">3列</button>
+              <button class="collage-layout-btn" data-layout="2row">2行</button>
+            </div>
+          </div>
+          <button class="action-btn" id="collage-btn" data-i18n="collageBtn">生成拼图</button>
+        </div>
+
+        <div class="result-area hidden" id="collage-result">
+          <div class="result-info">
+            <span id="collage-size"></span>
+          </div>
+          <a id="collage-download" class="download-btn" download data-i18n="downloadBtn">下载图片</a>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <!-- 相关工具链接 -->
+  <aside class="related-tools">
+    <h3 data-i18n="relatedTools">相关工具</h3>
+    <div class="tools-grid">
+      <a href="#" class="tool-card">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        <span data-i18n="toolTime">时间戳转换</span>
+      </a>
+      <a href="#" class="tool-card">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+        </svg>
+        <span data-i18n="toolJson">JSON格式化</span>
+      </a>
+      <a href="#" class="tool-card">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 9h18M9 21V9"/>
+        </svg>
+        <span data-i18n="toolQr">二维码生成</span>
+      </a>
+      <a href="#" class="tool-card">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3"/>
+          <rect x="8" y="8" width="8" height="8" rx="1"/>
+        </svg>
+        <span data-i18n="toolColor">颜色转换器</span>
+      </a>
+    </div>
+  </aside>
 
   <footer>
     <p data-i18n="privacyNotice">所有图片处理在本地完成，不会上传到服务器，保护隐私</p>
   </footer>
 
-  <script src="js/app.js"></script>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>

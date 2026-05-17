@@ -10,6 +10,10 @@ const translations = {
     tabRotate: '旋转/翻转',
     tabGrayscale: '灰度处理',
     tabAdjust: '亮度/对比度',
+    tabWatermark: '添加水印',
+    tabBlur: '模糊效果',
+    tabRound: '圆角处理',
+    tabCollage: '图片拼接',
     dropHint: '点击或拖拽图片到这里',
     supportedFormats: '支持 JPG, PNG, WebP, GIF',
     supportedFormatsCompress: '支持 JPG, PNG, WebP',
@@ -41,7 +45,26 @@ const translations = {
     grayscaleBtn: '应用灰度',
     brightness: '亮度',
     contrast: '对比度',
-    adjustBtn: '应用调整'
+    adjustBtn: '应用调整',
+    watermarkText: '水印文字',
+    watermarkPlaceholder: '输入水印文字',
+    fontSize: '字体大小',
+    opacity: '透明度',
+    watermarkPosition: '水印位置',
+    watermarkBtn: '添加水印',
+    blurLevel: '模糊强度',
+    blurBtn: '应用模糊',
+    cornerRadius: '圆角半径',
+    roundBtn: '应用圆角',
+    collageHint: '点击或拖拽多张图片到这里',
+    collageCount: '已选择',
+    collageLayout: '拼接布局',
+    collageBtn: '生成拼图',
+    relatedTools: '相关工具',
+    toolTime: '时间戳转换',
+    toolJson: 'JSON格式化',
+    toolQr: '二维码生成',
+    toolColor: '颜色转换器'
   },
   en: {
     title: 'Image Toolbox - Free Online Image Processing',
@@ -53,6 +76,10 @@ const translations = {
     tabRotate: 'Rotate',
     tabGrayscale: 'Grayscale',
     tabAdjust: 'Brightness',
+    tabWatermark: 'Watermark',
+    tabBlur: 'Blur',
+    tabRound: 'Rounded',
+    tabCollage: 'Collage',
     dropHint: 'Click or drag image here',
     supportedFormats: 'Supports JPG, PNG, WebP, GIF',
     supportedFormatsCompress: 'Supports JPG, PNG, WebP',
@@ -84,7 +111,26 @@ const translations = {
     grayscaleBtn: 'Apply Grayscale',
     brightness: 'Brightness',
     contrast: 'Contrast',
-    adjustBtn: 'Apply'
+    adjustBtn: 'Apply',
+    watermarkText: 'Watermark Text',
+    watermarkPlaceholder: 'Enter watermark text',
+    fontSize: 'Font Size',
+    opacity: 'Opacity',
+    watermarkPosition: 'Position',
+    watermarkBtn: 'Add Watermark',
+    blurLevel: 'Blur Level',
+    blurBtn: 'Apply Blur',
+    cornerRadius: 'Corner Radius',
+    roundBtn: 'Apply Rounded',
+    collageHint: 'Click or drag multiple images here',
+    collageCount: 'Selected',
+    collageLayout: 'Layout',
+    collageBtn: 'Create Collage',
+    relatedTools: 'Related Tools',
+    toolTime: 'Timestamp',
+    toolJson: 'JSON Formatter',
+    toolQr: 'QR Generator',
+    toolColor: 'Color Converter'
   }
 };
 
@@ -118,6 +164,15 @@ function setLanguage(lang) {
   // Update placeholders
   document.getElementById('resize-width').placeholder = translations[lang].placeholder;
   document.getElementById('resize-height').placeholder = translations[lang].placeholderHeight;
+  document.getElementById('watermark-text').placeholder = translations[lang].watermarkPlaceholder;
+
+  // Update placeholders with data-i18n-placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    if (translations[lang][key]) {
+      el.placeholder = translations[lang][key];
+    }
+  });
 
   // Update lang buttons
   document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -589,5 +644,256 @@ document.getElementById('adjust-btn').addEventListener('click', async () => {
   sizeSpan.textContent = `${t('originalFile')}: ${formatFileSize(adjustCurrentFile.size)} → ${formatFileSize(blob.size)}`;
   downloadBtn.href = url;
   downloadBtn.download = 'adjusted.jpg';
+  resultArea.classList.remove('hidden');
+});
+
+// ==================== Watermark ====================
+let watermarkCurrentImg = null;
+let watermarkCurrentFile = null;
+let wmPosition = 'center';
+
+setupUploadArea(
+  document.getElementById('watermark-upload'),
+  document.getElementById('watermark-input'),
+  document.getElementById('watermark-preview'),
+  document.getElementById('watermark-clear'),
+  (img, file) => {
+    watermarkCurrentImg = img;
+    watermarkCurrentFile = file;
+  }
+);
+
+document.getElementById('watermark-size').addEventListener('input', e => {
+  document.getElementById('watermark-size-val').textContent = e.target.value;
+});
+
+document.getElementById('watermark-opacity').addEventListener('input', e => {
+  document.getElementById('watermark-opacity-val').textContent = e.target.value;
+});
+
+document.querySelectorAll('.wm-pos-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.wm-pos-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    wmPosition = btn.dataset.pos;
+  });
+});
+
+document.getElementById('watermark-btn').addEventListener('click', async () => {
+  if (!watermarkCurrentImg) return;
+
+  const text = document.getElementById('watermark-text').value || 'Watermark';
+  const fontSize = parseInt(document.getElementById('watermark-size').value);
+  const opacity = parseInt(document.getElementById('watermark-opacity').value) / 100;
+
+  const canvas = createCanvas(watermarkCurrentImg);
+  const ctx = canvas.getContext('2d');
+  ctx.font = `${fontSize}px Arial`;
+  ctx.fillStyle = `rgba(255,255,255,${opacity})`;
+  ctx.strokeStyle = `rgba(0,0,0,${opacity * 0.5})`;
+  ctx.lineWidth = fontSize / 15;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.strokeText(text, canvas.width / 2, canvas.height / 2);
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+  const blob = await fileToBlob(canvas, 'image/jpeg');
+  const url = URL.createObjectURL(blob);
+
+  const resultArea = document.getElementById('watermark-result');
+  const sizeSpan = document.getElementById('watermark-size-info');
+  const downloadBtn = document.getElementById('watermark-download');
+
+  sizeSpan.textContent = `${t('originalFile')}: ${formatFileSize(watermarkCurrentFile.size)} → ${formatFileSize(blob.size)}`;
+  downloadBtn.href = url;
+  downloadBtn.download = 'watermarked.jpg';
+  resultArea.classList.remove('hidden');
+});
+
+// ==================== Blur ====================
+let blurCurrentImg = null;
+let blurCurrentFile = null;
+
+setupUploadArea(
+  document.getElementById('blur-upload'),
+  document.getElementById('blur-input'),
+  document.getElementById('blur-preview'),
+  document.getElementById('blur-clear'),
+  (img, file) => {
+    blurCurrentImg = img;
+    blurCurrentFile = file;
+  }
+);
+
+document.getElementById('blur-slider').addEventListener('input', e => {
+  document.getElementById('blur-value').textContent = e.target.value;
+});
+
+document.getElementById('blur-btn').addEventListener('click', async () => {
+  if (!blurCurrentImg) return;
+
+  const blurLevel = parseInt(document.getElementById('blur-slider').value);
+  const canvas = createCanvas(blurCurrentImg);
+  const ctx = canvas.getContext('2d');
+
+  ctx.filter = `blur(${blurLevel}px)`;
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.filter = ctx.filter;
+  tempCtx.drawImage(blurCurrentImg, 0, 0);
+  ctx.filter = 'none';
+  ctx.drawImage(tempCanvas, 0, 0);
+
+  const blob = await fileToBlob(canvas, 'image/jpeg');
+  const url = URL.createObjectURL(blob);
+
+  const resultArea = document.getElementById('blur-result');
+  const sizeSpan = document.getElementById('blur-size');
+  const downloadBtn = document.getElementById('blur-download');
+
+  sizeSpan.textContent = `${t('originalFile')}: ${formatFileSize(blurCurrentFile.size)} → ${formatFileSize(blob.size)}`;
+  downloadBtn.href = url;
+  downloadBtn.download = 'blurred.jpg';
+  resultArea.classList.remove('hidden');
+});
+
+// ==================== Rounded Corners ====================
+let roundCurrentImg = null;
+let roundCurrentFile = null;
+
+setupUploadArea(
+  document.getElementById('round-upload'),
+  document.getElementById('round-input'),
+  document.getElementById('round-preview'),
+  document.getElementById('round-clear'),
+  (img, file) => {
+    roundCurrentImg = img;
+    roundCurrentFile = file;
+  }
+);
+
+document.getElementById('round-slider').addEventListener('input', e => {
+  document.getElementById('round-value').textContent = e.target.value;
+});
+
+document.getElementById('round-btn').addEventListener('click', async () => {
+  if (!roundCurrentImg) return;
+
+  const radius = parseInt(document.getElementById('round-slider').value);
+  const canvas = document.createElement('canvas');
+  canvas.width = roundCurrentImg.naturalWidth;
+  canvas.height = roundCurrentImg.naturalHeight;
+  const ctx = canvas.getContext('2d');
+
+  ctx.beginPath();
+  ctx.moveTo(radius, 0);
+  ctx.lineTo(canvas.width - radius, 0);
+  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
+  ctx.lineTo(canvas.width, canvas.height - radius);
+  ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - radius, canvas.height);
+  ctx.lineTo(radius, canvas.height);
+  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
+  ctx.lineTo(0, radius);
+  ctx.quadraticCurveTo(0, 0, radius, 0);
+  ctx.closePath();
+  ctx.clip();
+
+  ctx.drawImage(roundCurrentImg, 0, 0);
+
+  const blob = await fileToBlob(canvas, 'image/png');
+  const url = URL.createObjectURL(blob);
+
+  const resultArea = document.getElementById('round-result');
+  const sizeSpan = document.getElementById('round-size');
+  const downloadBtn = document.getElementById('round-download');
+
+  sizeSpan.textContent = `${t('originalFile')}: ${formatFileSize(roundCurrentFile.size)} → ${formatFileSize(blob.size)}`;
+  downloadBtn.href = url;
+  downloadBtn.download = 'rounded.png';
+  resultArea.classList.remove('hidden');
+});
+
+// ==================== Collage / Grid ====================
+let collageImages = [];
+
+document.getElementById('collage-input').addEventListener('change', e => {
+  const files = Array.from(e.target.files);
+  collageImages = [];
+  const container = document.getElementById('collage-thumbnails');
+  container.innerHTML = '';
+  document.getElementById('collage-count').textContent = files.length;
+
+  files.forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        collageImages.push({ img, file });
+        const thumb = document.createElement('div');
+        thumb.className = 'collage-thumb';
+        thumb.innerHTML = `<img src="${ev.target.result}" alt="Thumb"><span class="remove-thumb" data-index="${index}">×</span>`;
+        container.appendChild(thumb);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  if (files.length > 0) {
+    document.getElementById('collage-preview-area').classList.remove('hidden');
+    document.querySelector('#collage-upload .upload-placeholder').classList.add('hidden');
+  }
+});
+
+document.getElementById('collage-clear').addEventListener('click', () => {
+  collageImages = [];
+  document.getElementById('collage-input').value = '';
+  document.getElementById('collage-count').textContent = '0';
+  document.getElementById('collage-preview-area').classList.add('hidden');
+  document.querySelector('#collage-upload .upload-placeholder').classList.remove('hidden');
+  document.getElementById('collage-thumbnails').innerHTML = '';
+});
+
+document.querySelectorAll('.collage-layout-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.collage-layout-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+document.getElementById('collage-btn').addEventListener('click', async () => {
+  if (collageImages.length < 2) return;
+
+  const layout = document.querySelector('.collage-layout-btn.active').dataset.layout;
+  let cols = 2, rows = 1;
+  if (layout === '2col') { cols = 2; rows = Math.ceil(collageImages.length / 2); }
+  else if (layout === '3col') { cols = 3; rows = Math.ceil(collageImages.length / 3); }
+  else if (layout === '2row') { rows = 2; cols = Math.ceil(collageImages.length / 2); }
+
+  const w = collageImages[0].img.naturalWidth;
+  const h = collageImages[0].img.naturalHeight;
+  const canvas = document.createElement('canvas');
+  canvas.width = w * cols;
+  canvas.height = h * rows;
+  const ctx = canvas.getContext('2d');
+
+  collageImages.slice(0, cols * rows).forEach((item, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    ctx.drawImage(item.img, col * w, row * h, w, h);
+  });
+
+  const blob = await fileToBlob(canvas, 'image/jpeg');
+  const url = URL.createObjectURL(blob);
+
+  const resultArea = document.getElementById('collage-result');
+  const sizeSpan = document.getElementById('collage-size');
+  const downloadBtn = document.getElementById('collage-download');
+
+  sizeSpan.textContent = `${collageImages.length} ${t('originalFile')} → ${formatFileSize(blob.size)}`;
+  downloadBtn.href = url;
+  downloadBtn.download = 'collage.jpg';
   resultArea.classList.remove('hidden');
 });
